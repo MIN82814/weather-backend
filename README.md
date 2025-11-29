@@ -93,33 +93,73 @@ GET /api/health
 }
 ```
 
-### 3. 取得高雄天氣預報
+### 3. 新的通用天氣查詢 API（支援定位與多地區） 🔎📍
+
+此專案已更新為「使用者定位/地區查詢」的通用 API，可以接受地區名稱、經緯度或一次查詢多地區。
+
+可用參數（GET /api/weather）:
+
+- city=地區名稱（單一）
+- cities=地區 1,地區 2（逗號分隔多個地區）
+- lat=數值&lng=數值（以單一座標進行反向地理定位）
+- coords=lat,lng;lat,lng（以分號 ; 分隔多組座標）
+
+若沒有提供位置參數，伺服器會嘗試以請求 IP 做簡易定位（作為 fallback）。
+
+範例：
+
+1. 以地區名稱查詢（單一）
+
+```
+GET /api/weather?city=臺北市
+```
+
+2. 以多個地區名稱查詢
+
+```
+GET /api/weather?cities=臺北市,高雄市
+```
+
+3. 以座標查詢（單一）
+
+```
+GET /api/weather?lat=25.033&lng=121.565
+```
+
+4. 以多座標查詢（同時間查多區）
+
+```
+GET /api/weather?coords=25.033,121.565;22.627,120.301
+```
+
+5. 向下相容：仍然可呼叫原本的高雄路由
 
 ```
 GET /api/weather/kaohsiung
 ```
 
-回應範例：
+回應格式（簡化說明）：
 
 ```json
 {
   "success": true,
-  "data": {
-    "city": "高雄市",
-    "updateTime": "資料更新時間說明",
-    "forecasts": [
-      {
-        "startTime": "2025-09-30 18:00:00",
-        "endTime": "2025-10-01 06:00:00",
-        "weather": "多雲時晴",
-        "rain": "10%",
-        "minTemp": "25°C",
-        "maxTemp": "32°C",
-        "comfort": "悶熱",
-        "windSpeed": "偏南風 3-4 級"
+  "query": ["臺北市", "高雄市"],
+  "results": [
+    {
+      "name": "臺北市",
+      "success": true,
+      "data": {
+        /* weather data */
       }
-    ]
-  }
+    },
+    {
+      "name": "高雄市",
+      "success": true,
+      "data": {
+        /* weather data */
+      }
+    }
+  ]
 }
 ```
 
