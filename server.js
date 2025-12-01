@@ -121,3 +121,45 @@ const getWeatherByCity = async (req, res) => {
 
     const status = error.response ? error.response.status : 500;
     const message = error.response ? (error.response.data.message || "無法取得天氣資料") : "伺服器內部錯誤";
+
+    res.status(status).json({
+      success: false,
+      error: error.response ? "CWA API 錯誤" : "伺服器錯誤",
+      message: message,
+    });
+  }
+};
+
+// Routes
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
+// 新增動態路由：取得指定城市天氣預報
+// 例如: GET /api/weather/臺北市
+app.get("/api/weather/:cityName", getWeatherByCity);
+
+// 根路徑歡迎訊息
+app.get("/", (req, res) => {
+  res.json({
+    message: "歡迎使用 CWA 天氣預報 API",
+    endpoints: {
+      weather: "/api/weather/:cityName",
+      health: "/api/health",
+    },
+    supportedCities: VALID_CITIES,
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: "找不到此路徑",
+    message: `您請求的路徑 ${req.path} 不存在。`,
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 伺服器運行已運作: http://localhost:${PORT}`);
+  console.log(`📍 環境: ${process.env.NODE_ENV || "development"}`);
+});
